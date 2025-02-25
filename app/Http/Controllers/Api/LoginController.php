@@ -46,3 +46,22 @@ class LoginController extends Controller
         ], 200);
     }
 }
+
+
+// public function login(Request $request)
+// {
+//     $credentials = $request->only('email', 'password');
+
+//     if (!$token = auth()->attempt($credentials)) {
+//         return response()->json(['error' => 'Unauthorized'], 401);
+//     }
+
+//     $user = auth()->user();
+
+//     return response()->json([
+//         'access_token' => $token,
+//         'token_type'   => 'bearer',
+//         'expires_in'   => auth()->factory()->getTTL() * 60,
+//         'user'         => $user
+//     ]);
+// }

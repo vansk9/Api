@@ -10,6 +10,43 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
+    // LOGIN
+    public function login(Request $request)
+    {
+        // Validasi input
+        $validator = Validator::make($request->all(), [
+            'email'     => 'required|email',
+            'password'  => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        // Ambil credentials dari request
+        $credentials = $request->only('email', 'password');
+
+        // Coba melakukan autentikasi
+        if (!$token = JWTAuth::attempt($credentials)) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        // Ambil user yang berhasil login
+        $user = auth()->user();
+
+        // Tambahkan permission ke token
+        $token = JWTAuth::fromUser($user, [
+            'permission' => $user->permission
+        ]);
+
+        return response()->json([
+            'success'   => true,
+            'message'   => 'Login successful',
+            'user'      => $user,
+            'token'     => $token,
+        ]);
+    }
+
     // GET User dari token
     public function getUser(Request $request)
     {
@@ -34,7 +71,7 @@ class AuthController extends Controller
             }
 
             $validator = Validator::make($request->all(), [
-                'id' => 'required|string|exists:users,_id'
+                'id' => 'required|string|exists:users,id'
             ]);
 
             if ($validator->fails()) {

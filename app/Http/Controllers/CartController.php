@@ -15,29 +15,35 @@ class CartController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-            if (!$user) {
-                return response()->json(['message' => 'Unauthorized'], 401);
+    
+            if ($user->permission !== 'admin') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized'
+                ], 401);
             }
-
+    
+            // Validasi input
             $validator = Validator::make($request->all(), [
                 'product_id' => 'required|string',
                 'product_name' => 'required|string',
                 'quantity' => 'required|integer|min:1',
                 'price' => 'required|numeric|min:0'
             ]);
-
+    
             if ($validator->fails()) {
                 return response()->json(['errors' => $validator->errors()], 400);
             }
-
+    
+            // Simpan ke database dengan user_id yang benar
             $cartItem = Cart::create([
-                'user_id' => $user->_id,
+                'user_id' => $user->id, // Pastikan ini sesuai
                 'product_id' => $request->product_id,
                 'product_name' => $request->product_name,
                 'quantity' => $request->quantity,
                 'price' => $request->price
             ]);
-
+    
             return response()->json(['message' => 'Item berhasil ditambahkan ke keranjang', 'cart' => $cartItem], 201);
         } catch (JWTException $e) {
             return response()->json(['message' => 'Token tidak valid atau kedaluwarsa'], 401);
